@@ -21,24 +21,37 @@ int main (int argc, char *argv[])
 {
   Time::SetResolution (Time::NS);
   
+  // Create Client and SErver Nodes
   NodeContainer clientNodes;
   clientNodes.Create (10);
   NodeContainer serverNodes;
   serverNodes.Create(5);
   
-  YansWifiChannelHelper channel = YansWifiChannelHelper::Default () ;
-  YansWifiPhyHelper phy = YansWifiPhyHelper::Default();
-  WifiMacHelper wifiMac;
+  
   WifiHelper wifi = WifiHelper::Default();
   
+  //Helpers for Channel and Physical Layer
+  YansWifiChannelHelper channel = YansWifiChannelHelper::Default () ;
+  YansWifiPhyHelper phy = YansWifiPhyHelper::Default();
+  
+  //Associate channel to physical layer
+  phy.SetChannel( channel.Create() );
+  
+  //Helper for wifiMac
+  WifiMacHelper wifiMac;
+  
+  //Set Mac as Adhoc  
   WifiMac.settype("ns3::AdhocWifiMac");
   
+  //Install Adhoc wifi on client devices
   NetDeviceContainer cDevices;
   cDevices = wifi.Install(phy, mac, cDevices);
   
+  //Install Adhoc wifi on server devices
   NetDeviceContainer sDevices;
   sDevices - wifi.Install(phy, mac, sDevices);
   
+  //Set up and installation  of mobility model
   MobilityHelper mobility;
   mobility. SetPositionAllocator("ns3::GridPositionAllocator,
   "MinX", DoubleValue (0.0),
@@ -54,6 +67,24 @@ int main (int argc, char *argv[])
   mobility.Install(clientNodes);
   mobility.Install(serverNodes);
   
+  OlsrHelper olsr;
+  Ipv4StaticRoutingHelper staticRouting ;
+  
+  Ipv4ListRoutingHelper list ;
+  
+  list.add(staticRouting, 0);
+  list.add(olsr, 10);
+  
+  Ipv4AddressHelper address;
+  NS_LOG_INFF("Assign IP Address");
+  
+  address.SetBase("10.1.0.0", "255.255.255.0");
+  Ipv4InterfaceContainer clientInterface ;
+  clientInterface = address.assign(cDevices);
+   
+  address.SetBase("10.1.1.0", "255.255.255.0");
+  Ipv4InterfaceContainer serverInterface;
+  serverInterface = address.assign(sDevices);
   
   return 0; 
 }
