@@ -41,28 +41,27 @@ int main (int argc, char *argv[])
   WifiMacHelper wifiMac;
   
   //Set Mac as Adhoc  
-  WifiMac.settype("ns3::AdhocWifiMac");
+  wifiMac.SetType("ns3::AdhocWifiMac");
   
   //Install Adhoc wifi on client devices
   NetDeviceContainer cDevices;
-  cDevices = wifi.Install(phy, mac, cDevices);
+  cDevices = wifi.Install(phy, wifiMac, cDevices);
   
   //Install Adhoc wifi on server devices
   NetDeviceContainer sDevices;
-  sDevices - wifi.Install(phy, mac, sDevices);
+  sDevices = wifi.Install(phy, wifiMac, sDevices);
   
   //Set up and installation  of mobility model
   MobilityHelper mobility;
-  mobility. SetPositionAllocator("ns3::GridPositionAllocator,
-  "MinX", DoubleValue (0.0),
-  "MinY", DoubleValue (0.0),
-  "DeltaX", DoubleValue (5.0),
-  "DeltaY", DoubleValue (10.0),
-  "GridWidth", UintegerValue (3),
-  "LayoutType", StringValue ("RowFirst")) ;
+  mobility. SetPositionAllocator("ns3::GridPositionAllocator, \
+                                 "MinX", DoubleValue (0.0), \
+                                 "MinY", DoubleValue (0.0), \
+                                 "DeltaX", DoubleValue (5.0), \
+                                 "DeltaY", DoubleValue (10.0), \
+                                 "GridWidth", UintegerValue (3), \
+                                 "LayoutType", StringValue ("RowFirst")) ;
   
-  mobility.SetMobility("ns3::RandomWalk2dMobilityModel",
-  "Bounds", RectangleValue(Rectangle(-50, 50, -50, 50))) ;
+  mobility.SetMobility("ns3::RandomWalk2dMobilityModel", "Bounds", RectangleValue(Rectangle(-50, 50, -50, 50))) ;
   
   mobility.Install(clientNodes);
   mobility.Install(serverNodes);
@@ -72,19 +71,19 @@ int main (int argc, char *argv[])
   
   Ipv4ListRoutingHelper list ;
   
-  list.add(staticRouting, 0);
-  list.add(olsr, 10);
+  list.Add(staticRouting, 0);
+  list.Add(olsr, 10);
   
   Ipv4AddressHelper address;
-  NS_LOG_INFF("Assign IP Address");
+  NS_LOG_INFO("Assign IP Address");
   
   address.SetBase("10.1.0.0", "255.255.255.0");
   Ipv4InterfaceContainer clientInterface ;
-  clientInterface = address.assign(cDevices);
+  clientInterface = address.Assign(cDevices);
    
   address.SetBase("10.1.1.0", "255.255.255.0");
   Ipv4InterfaceContainer serverInterface;
-  serverInterface = address.assign(sDevices);
+  serverInterface = address.Assign(sDevices);
   
   return 0; 
 }
