@@ -7,25 +7,23 @@
 #include "ns3/olsr-helper.h"
 #include "ns3/ipv4-static-routing-helper.h"
 #include "ns3/ipv4-list-routing-helper.h"
+
  
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <string>
 
+using namespace std; 
 using namespace ns3;
 
-void ReadData(); 
 
 NS_LOG_COMPONENT_DEFINE ("FirstScriptExample");
-std::vector <int> jobId;
-std::vector <double> jobArrivalT;
-std::vector <int> client;
-std::vector <int> dataBytes;
 
 class Jobs
 {
   public:
+  void AssignData(int jId, double jAtime, int cNode, int dSize);
   
   private:
   u_int32_t jobId; 
@@ -35,16 +33,36 @@ class Jobs
   
 };
 
+void Jobs::AssignData(int jId, double jAtime, int cNode, int dSize)
+{
+  jobId = jId ;
+  dataSize = dSize ;
+  clientNode = cNode ;
+  jobArrivalTime = jAtime ;
+}
+
 int main (int argc, char *argv[])
 {
+  std::vector <int> jobId  ;
+  std::vector <double> jobArrivalT;
+  std::vector <int> client;
+  std::vector <int> dataBytes;
   Time::SetResolution (Time::NS);
+  
   
   // Create Client and SErver Nodes
   NodeContainer clientNodes, serverNodes ;
   clientNodes.Create (10);
   serverNodes.Create(5);
   
-  std::vector <Jobs> jobs ;
+  std::vector <Jobs> job (5, Jobs()) ;
+  
+  job[0].AssignData(0, 0.000000001, 3, 2048) ;
+  job[1].AssignData(1, 0.000000011, 5, 4096) ;
+  job[2].AssignData(2, 0.000000300, 4, 1024) ;
+  job[3].AssignData(3, 0.000000200, 2, 4192) ;
+  job[4].AssignData(4, 0.000000230, 8, 3072) ;
+
   
   
   WifiHelper wifi = WifiHelper::Default ();
@@ -108,51 +126,7 @@ int main (int argc, char *argv[])
   Ipv4InterfaceContainer serverInterface;
   serverInterface = address.Assign(sDevices);
   
+
   return 0; 
 }
 
-
-
-void ReadData()
-{
-  FILE *fp ;
-  char dataFile[20] ;
-  char character ;
-  double word ;
-  double data ;
-  int i ;
-  
-  fp = fopen(dataFile, "r" ) ;
-  
-    while(1)
-    {
-        character = fgetc( fp );
-        if(character == EOF)
-        {
-            break ;
-        }
-        for(i = 0 ;i <=3; i ++)
-        {
-            if (i == 0)
-            {
-                data = fscanf ( fp, " %lf ", &word) ;   
-                jobId.push_back(int(data)) ;
-            }
-            if (i == 1)
-            {
-                data = fscanf ( fp, " %lf ", &word) ;   
-                jobArrivalT.push_back(data) ;
-            }
-            if (i == 2)
-            {
-                data = fscanf ( fp, " %lf ", &word) ;   
-                client.push_back(int(data)) ;
-            }
-            if (i == 3)
-            {
-                data = fscanf ( fp, " %lf ", &word) ;   
-                dataBytes.push_back(int(data));
-            }
-        }
-    }
-}
