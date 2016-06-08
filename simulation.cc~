@@ -23,30 +23,28 @@ NS_LOG_COMPONENT_DEFINE ("FirstScriptExample");
 class Jobs
 {
   public:
-  void AssignData(int jId, double jAtime, int cNode, int dSize);
+  void AssignData(int jId, double jAtime, int cNode, int dataS, dataR);
   
   private:
   u_int32_t jobId; 
-  u_int32_t dataSize;
+  u_int32_t dataSent;
+  u_int32_t dataRecive;
   u_int32_t clientNode;
   double jobArrivalTime; 
   
 };
 
-void Jobs::AssignData(int jId, double jAtime, int cNode, int dSize)
+void Jobs::AssignData(int jId, double jAtime, int cNode, int dataS, dataR)
 {
   jobId = jId ;
-  dataSize = dSize ;
   clientNode = cNode ;
   jobArrivalTime = jAtime ;
+  dataSent = dataS ;
+  dataReceive = dataR ;
 }
 
 int main (int argc, char *argv[])
 {
-  std::vector <int> jobId  ;
-  std::vector <double> jobArrivalT;
-  std::vector <int> client;
-  std::vector <int> dataBytes;
   Time::SetResolution (Time::NS);
   
   
@@ -57,11 +55,11 @@ int main (int argc, char *argv[])
   
   std::vector <Jobs> job (5, Jobs()) ;
   
-  job[0].AssignData(0, 0.000000001, 3, 2048) ;
-  job[1].AssignData(1, 0.000000011, 5, 4096) ;
-  job[2].AssignData(2, 0.000000300, 4, 1024) ;
-  job[3].AssignData(3, 0.000000200, 2, 4192) ;
-  job[4].AssignData(4, 0.000000230, 8, 3072) ;
+  job[0].AssignData(0, 0.000000001, 3, 2048, 1048) ;
+  job[1].AssignData(1, 0.000000011, 5, 4096, 3072) ;
+  job[2].AssignData(2, 0.000000200, 4, 1024, 1024) ;
+  job[3].AssignData(3, 0.000000230, 2, 4192, 2048) ;
+  job[4].AssignData(4, 0.000000300, 8, 3072, 2048) ;
 
   
   
