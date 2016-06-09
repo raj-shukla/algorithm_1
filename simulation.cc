@@ -1,5 +1,6 @@
 #include "ns3/core-module.h"
 #include "ns3/network-module.h"
+#include "ns3/applications-module.h"
 #include "ns3/mobility-module.h"
 #include "ns3/config-store-module.h"
 #include "ns3/wifi-module.h"
@@ -23,45 +24,61 @@ NS_LOG_COMPONENT_DEFINE ("FirstScriptExample");
 class Jobs
 {
   public:
-  void AssignData(int jId, double jAtime, int cNode, int dataS, dataR);
+  void AssignData(int jId, double jAtime, int cNode, int packetS, int packetR);
+  int GetServerNode(void );
+  int GetClientNode() ;
+  unsigned GetPacketSent() ;
   
   private:
   u_int32_t jobId; 
-  u_int32_t dataSent;
-  u_int32_t dataRecive;
+  u_int32_t packetSent;
+  u_int32_t packetReceive;
   u_int32_t clientNode;
   double jobArrivalTime; 
   
 };
 
-void Jobs::AssignData(int jId, double jAtime, int cNode, int dataS, dataR)
+void Jobs::AssignData(int jId, double jAtime, int cNode, int packetS, int packetR)
 {
   jobId = jId ;
   clientNode = cNode ;
   jobArrivalTime = jAtime ;
-  dataSent = dataS ;
-  dataReceive = dataR ;
+  packetSent = packetS ;
+  packetReceive = packetR ;
 }
 
+int Jobs::GetServerNode(void)
+{
+  int server ;
+  server = rand()%5 ;
+  return server ;
+}
+
+int Jobs::GetClientNode()
+{
+  return this->clientNode ;
+}
+
+unsigned Jobs::GetPacketSent()
+{
+  return this->packetSent;
+}
 int main (int argc, char *argv[])
 {
   Time::SetResolution (Time::NS);
   
-  
+  std::vector <Jobs> job (5, Jobs()) ;
+
+  job[0].AssignData(0, 0.000000001, 3, 2048u, 1048u) ;
+  job[1].AssignData(1, 0.000000011, 5, 4096u, 3072u) ;
+  job[2].AssignData(2, 0.000000200, 4, 1024u, 1024u) ;
+  job[3].AssignData(3, 0.000000230, 2, 4192u, 2048u) ;
+  job[4].AssignData(4, 0.000000300, 8, 3072u, 2048u) ;
+
   // Create Client and SErver Nodes
   NodeContainer clientNodes, serverNodes ;
   clientNodes.Create (10);
   serverNodes.Create(5);
-  
-  std::vector <Jobs> job (5, Jobs()) ;
-  
-  job[0].AssignData(0, 0.000000001, 3, 2048, 1048) ;
-  job[1].AssignData(1, 0.000000011, 5, 4096, 3072) ;
-  job[2].AssignData(2, 0.000000200, 4, 1024, 1024) ;
-  job[3].AssignData(3, 0.000000230, 2, 4192, 2048) ;
-  job[4].AssignData(4, 0.000000300, 8, 3072, 2048) ;
-
-  
   
   WifiHelper wifi = WifiHelper::Default ();
   
@@ -123,6 +140,18 @@ int main (int argc, char *argv[])
   address.SetBase("10.1.1.0", "255.255.255.0");
   Ipv4InterfaceContainer serverInterface;
   serverInterface = address.Assign(sDevices);
+  
+  
+  for (int i = 0; i < int(job.size());  i++)
+  {
+    ApplicationContainer clientApp, serverApp ;
+    UdpServerHelper udpServer (9) ;
+    serverApp = udpServer.Install(serverNodes.Get(job[i].GetServerNode() )) ; 
+    
+    UdpClientHelper udpClient (clientInterface.GetAddress( job[i].GetClientNode() ) , 9) ;
+    udpClient.SetAttribute("MaxPackets", UintegerValue (job[i].GetPacketSent() ) ) ;
+    udpClient.SetAttribute("PacketSize", UintegerValue(1472))
+  }
   
 
   return 0; 
