@@ -28,6 +28,7 @@ class Jobs
   int GetServerNode(void );
   int GetClientNode() ;
   unsigned GetPacketSent() ;
+  double GetJobArrivalTime ();
   
   private:
   u_int32_t jobId; 
@@ -63,13 +64,23 @@ unsigned Jobs::GetPacketSent()
 {
   return this->packetSent;
 }
+
+double Jobs::GetJobArrivalTime()
+{
+  return this->jobArrivalTime ;
+}
 int main (int argc, char *argv[])
 {
   Time::SetResolution (Time::NS);
   
+  LogComponentEnable ("UdpEchoClientApplication", LOG_LEVEL_INFO);
+  LogComponentEnable ("UdpEchoServerApplication", LOG_LEVEL_INFO);
+  
+  double simulationTime = 10 ;
+  
   std::vector <Jobs> job (5, Jobs()) ;
 
-  job[0].AssignData(0, 0.000000001, 3, 2048u, 1048u) ;
+  job[0].AssignData(0, 1.000000001, 3, 2048u, 1048u) ;
   job[1].AssignData(1, 0.000000011, 5, 4096u, 3072u) ;
   job[2].AssignData(2, 0.000000200, 4, 1024u, 1024u) ;
   job[3].AssignData(3, 0.000000230, 2, 4192u, 2048u) ;
@@ -147,11 +158,20 @@ int main (int argc, char *argv[])
     ApplicationContainer clientApp, serverApp ;
     UdpServerHelper udpServer (9) ;
     serverApp = udpServer.Install(serverNodes.Get(job[i].GetServerNode() )) ; 
+    serverApp.Start(Seconds (0)) ;
+    serverApp.Stop(Time(simulationTime + 1)) ;
     
     UdpClientHelper udpClient (clientInterface.GetAddress( job[i].GetClientNode() ) , 9) ;
     udpClient.SetAttribute("MaxPackets", UintegerValue (job[i].GetPacketSent() ) ) ;
-    udpClient.SetAttribute("PacketSize", UintegerValue(1472))
+    udpClient.SetAttribute("Interval", TimeValue (Seconds (1.0))) ;
+    udpClient.SetAttribute("PacketSize", UintegerValue(1472)) ;
+    clientApp.Start( Time (job[i].GetJobArrivalTime() )) ;
+    clientApp.Stop(Time (simulationTime + 1)) ;
   }
+  
+  Simulator::Stop(Seconds(simulationTime + 1)) ;
+  Simulator::Run() ;
+  Simulator::Destroy () ;
   
 
   return 0; 
